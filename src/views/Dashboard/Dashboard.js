@@ -1,16 +1,18 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 // Chakra imports
 import {
   Box,
   Button,
+  Center,
   Flex,
   Grid,
   Icon,
   Progress,
   SimpleGrid,
   Spacer,
+  Spinner,
   Stack,
   Stat,
   StatHelpText,
@@ -65,11 +67,53 @@ import {
   lineChartOptionsDashboard,
 } from "variables/charts";
 import { dashboardTableData, timelineData } from "variables/general";
+import { db } from "../../firebase";
+import { collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
 
 export default function Dashboard() {
+
+  const [stats, setStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  //Fetching 75 of the most recent data entries.
+  useEffect(() => {
+
+    const _query = query(
+      collection(db, "stats"),
+      orderBy("timestamp", "desc"),
+      limit(75)
+    );
+
+    const statsDataListener = onSnapshot(_query, (snapshot) => {
+      if(!snapshot.empty){
+        let dataArray = [];
+        snapshot.forEach((doc) => {
+          dataArray.push(doc.data());
+        })
+        console.log(dataArray)
+        setStats(dataArray);
+        setLoading(false);
+      }
+    });
+    return () => {
+			statsDataListener();
+		};
+  }, []);
+
+  console.log(stats);
+  console.log(loading)
+
   return (
     <Flex flexDirection='column' pt={{ base: "120px", md: "75px" }}>
-      <Grid
+      {loading == true ? (
+        <>
+        <Center h={"calc(100vh - 120px)"}>
+          <Spinner size={"xl"} color={"white"} />
+        </Center>
+        </>
+      ) : (
+        <>
+        <Grid
         templateColumns={{ sm: "1fr", md: "1fr 1fr", "2xl": "2fr 1.2fr 1.5fr" }}
         my='26px'
         gap='18px'>
@@ -146,7 +190,7 @@ export default function Dashboard() {
                 <Icon as={IoEllipsisHorizontal} color='#7551FF' />
               </Button>
             </Flex>
-            <Flex direction={{ sm: "column", md: "row" }}>
+            <Flex direction={{ sm: "column", md: "row" }} justifyContent={"space-between"}>
               <Flex
                 direction='column'
                 me={{ md: "6px", lg: "52px" }}
@@ -169,8 +213,7 @@ export default function Dashboard() {
                 <Flex
                   direction='column'
                   p='22px'
-                  pe={{ sm: "22px", md: "8px", lg: "22px" }}
-                  minW={{ sm: "170px", md: "140px", lg: "170px" }}
+                  minW={{ sm: "210px", md: "140px", lg: "210px" }}
                   bg='linear-gradient(126.97deg, #060C29 28.26%, rgba(4, 12, 48, 0.5) 91.2%)'
                   borderRadius='20px'>
                   <Text color='gray.400' fontSize='sm' mb='4px'>
@@ -183,13 +226,13 @@ export default function Dashboard() {
               </Flex>
               <Box mx={{ sm: "auto", md: "0px" }}>
                 <GradientProgress
-                  percent={70}
+                  percent={80}
                   viewport
                   size={
                     window.innerWidth >= 1024
                       ? 200
                       : window.innerWidth >= 768
-                      ? 170
+                      ? 200
                       : 200
                   }
                   isGradient
@@ -202,10 +245,10 @@ export default function Dashboard() {
                   <Flex direction='column' justify='center' align='center'>
                     <Text
                       color='#fff'
-                      fontSize={{ md: "36px", lg: "50px" }}
+                      fontSize={"50px"}
                       fontWeight='bold'
                       mb='4px'>
-                      9.3
+                      {Number(stats[0].iaqScore/10).toFixed(2)}
                     </Text>
                     <Text color='gray.400' fontSize='sm'>
                       out of 10
@@ -256,19 +299,18 @@ export default function Dashboard() {
             </Box>
             <Stack
               direction='row'
-              spacing={{ sm: "42px", md: "68px" }}
-              justify='center'
-              maxW={{ sm: "270px", md: "300px", lg: "100%" }}
+              justify="space-between"
+              w={{ sm: "270px", md: "300px", lg: "100%" }}
               mx={{ sm: "auto", md: "0px" }}
               p='18px 22px'
               bg='linear-gradient(126.97deg, rgb(6, 11, 40) 28.26%, rgba(10, 14, 35) 91.2%)'
               borderRadius='20px'
               position='absolute'
               bottom='5%'>
-              <Text fontSize='xs' color='gray.400'>
+              <Text fontSize='xs' color='gray.400' w={"20%"} align={"left"}>
                 0%
               </Text>
-              <Flex direction='column' align='center' minW='80px'>
+              <Flex direction='column' align='center' minW='80px' w={"60%"}>
                 <Text color='#fff' fontSize='28px' fontWeight='bold'>
                   95%
                 </Text>
@@ -276,7 +318,7 @@ export default function Dashboard() {
                   Based on likes
                 </Text>
               </Flex>
-              <Text fontSize='xs' color='gray.400'>
+              <Text fontSize='xs' color='gray.400' w={"20%"} align={"right"}>
                 100%
               </Text>
             </Stack>
@@ -406,6 +448,8 @@ export default function Dashboard() {
           </Box>
         </Card>
       </Grid>
+        </>
+      )}
     </Flex>
   );
 }

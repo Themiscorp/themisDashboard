@@ -413,14 +413,7 @@ export function SidebarResponsive(props) {
         justifyContent='center'
         alignItems='center'
         fontSize='11px'>
-        <SimmmpleLogoWhite w='22px' h='22px' me='10px' mt='2px' />
-        <Box
-          bg='linear-gradient(97.89deg, #FFFFFF 70.67%, rgba(117, 122, 140, 0) 108.55%)'
-          bgClip='text'>
-          <Text fontSize='sm' letterSpacing='3px' mt='3px' color='transparent'>
-            {logoText}
-          </Text>
-        </Box>
+        <Image src={sidebarLogo} w={"180px"} />
       </Link>
       <Separator></Separator>
     </Box>
