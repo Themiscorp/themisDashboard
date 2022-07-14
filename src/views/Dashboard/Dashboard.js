@@ -87,7 +87,6 @@ TimeAgo.addLocale(en);
 
 export default function Dashboard() {
   const [stats, setStats] = useState([]);
-  const [airQualityProgress, setAirQualityProgress] = useState(0);
   const [loading, setLoading] = useState(true);
 
   //Fetching 75 of the most recent data entries.
@@ -104,7 +103,6 @@ export default function Dashboard() {
         snapshot.forEach((doc) => {
           dataArray.push(doc.data());
         });
-        console.log(dataArray);
         setStats(dataArray);
         setLoading(false);
       }
@@ -112,10 +110,9 @@ export default function Dashboard() {
     return () => {
       statsDataListener();
     };
-  }, []);
+  }, [stats]);
 
   console.log(stats);
-  console.log(loading);
 
   return (
     <Flex flexDirection="column" pt={{ base: "120px", md: "75px" }}>
@@ -278,7 +275,7 @@ export default function Dashboard() {
                   </Flex>
                   <Box mx={{ sm: "auto", md: "0px" }}>
                     <GradientProgress
-                      percent={stats[0].iaqScore}
+                      percent={Number(stats[0].iaqScore).toFixed(0)}
                       viewport
                       size={
                         window.innerWidth >= 1024
@@ -427,7 +424,7 @@ export default function Dashboard() {
                     </StatLabel>
                     <Flex>
                       <StatNumber fontSize="lg" color="#fff">
-                        {`${Number(stats[0].co2Value).toFixed(2)} ppm`}
+                        {`${Number(stats[0].co2Value).toFixed(0)} ppm`}
                       </StatNumber>
                     </Flex>
                   </Stat>
@@ -457,7 +454,7 @@ export default function Dashboard() {
                     </StatLabel>
                     <Flex>
                       <StatNumber fontSize="lg" color="#fff">
-                        {`${Number(stats[0].coValue).toFixed(2)} ppm`}
+                        {`${Number(stats[0].coValue).toFixed(0)} ppm`}
                       </StatNumber>
                     </Flex>
                   </Stat>
@@ -518,7 +515,7 @@ export default function Dashboard() {
                     </StatLabel>
                     <Flex>
                       <StatNumber fontSize="lg" color="#fff" fontWeight="bold">
-                      {`${Number(stats[0].humidityValue).toFixed(2)} %`}
+                      {`${Number(stats[0].humidityValue).toFixed(0)} %`}
                       </StatNumber>
                     </Flex>
                   </Stat>
