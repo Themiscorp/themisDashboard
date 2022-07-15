@@ -25,14 +25,6 @@ var dashRoutes = [
     icon: <HomeIcon color='inherit' />,
     component: Dashboard,
     layout: "/admin",
-  },
-  {
-    path: "/tables",
-    name: "Historic Data",
-    rtlName: "لوحة القيادة",
-    icon: <StatsIcon color='inherit' />,
-    component: Tables,
-    layout: "/admin",
-  },
+  }
 ];
 export default dashRoutes;
