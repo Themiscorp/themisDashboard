@@ -8,6 +8,7 @@ import {
   Flex,
   Grid,
   Icon,
+  Link,
   Progress,
   SimpleGrid,
   Spacer,
@@ -244,6 +245,9 @@ export default function Dashboard() {
                         variant="no-hover"
                         bg="transparent"
                         my={{ sm: "1.5rem", lg: "0px" }}
+                        as={Link}
+                        href={"https://storage.googleapis.com/sacred-choir-353619.appspot.com/Final%20Project%20Report%20-%20Themis.pdf"}
+                        target={"_blank"}
                       >
                         <Text
                           fontSize="sm"
