@@ -33,7 +33,7 @@ import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 import CardHeader from "components/Card/CardHeader.js";
 import BarChart from "components/Charts/BarChart";
-import LineChart from "components/Charts/LineChart";
+// import LineChart from "components/Charts/LineChart";
 import IconBox from "components/Icons/IconBox";
 import DashboardTableRow from "components/Tables/DashboardTableRow";
 import TimelineRow from "components/Tables/TimelineRow";
@@ -81,38 +81,110 @@ import {
 import ReactTimeAgo from "react-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import TimeAgo from "javascript-time-ago";
+import { LineChart, XAxis, Tooltip, CartesianGrid, Line, YAxis } from "recharts";
 
 TimeAgo.addDefaultLocale(en);
 TimeAgo.addLocale(en);
 
 export default function Dashboard() {
   const [stats, setStats] = useState([]);
+  const [plotting, setPlotting] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  //Fetching 75 of the most recent data entries.
+  //Fetching 50 of the most recent data entries.
   useEffect(() => {
     const _query = query(
       collection(db, "stats"),
       orderBy("timestamp", "desc"),
-      limit(75)
+      limit(50)
     );
 
     const statsDataListener = onSnapshot(_query, (snapshot) => {
       if (!snapshot.empty) {
         let dataArray = [];
+        let plottingArray = [];
         snapshot.forEach((doc) => {
           dataArray.push(doc.data());
+          plottingArray.push({ iaq: doc.data().iaqScore, time: `${new Date(doc.data().timestamp).getHours()}:${new Date(
+            doc.data().timestamp
+          ).getMinutes()}`});
         });
         setStats(dataArray);
+
+        plottingArray.reverse();
+        setPlotting(plottingArray);
         setLoading(false);
       }
     });
     return () => {
       statsDataListener();
     };
-  }, [stats]);
+  }, []);
 
   console.log(stats);
+
+  // let linechartOptions = {
+  //   chart: {
+  //     toolbar: {
+  //       show: false,
+  //     },
+  //   },
+  //   tooltip: {
+  //     theme: "dark",
+  //   },
+  //   dataLabels: {
+  //     enabled: false,
+  //   },
+  //   stroke: {
+  //     curve: "smooth",
+  //   },
+  //   xaxis: {
+  //     type: "time",
+  //     categories: plottingY,
+  //     labels: {
+  //       style: {
+  //         colors: "#c8cfca",
+  //         fontSize: "12px",
+  //       },
+  //     },
+  //     axisBorder: {
+  //       show: false,
+  //     },
+  //     axisTicks: {
+  //       show: false,
+  //     },
+  //   },
+  //   yaxis: {
+  //     labels: {
+  //       style: {
+  //         colors: "#c8cfca",
+  //         fontSize: "12px",
+  //       },
+  //     },
+  //   },
+  //   legend: {
+  //     show: false,
+  //   },
+  //   grid: {
+  //     strokeDashArray: 5,
+  //     borderColor: "#56577A",
+  //   },
+  //   fill: {
+  //     type: "gradient",
+  //     gradient: {
+  //       shade: "dark",
+  //       type: "vertical",
+  //       shadeIntensity: 0,
+  //       gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+  //       inverseColors: true,
+  //       opacityFrom: 0.8,
+  //       opacityTo: 0,
+  //       stops: [],
+  //     },
+  //     colors: ["#2CD9FF", "#582CFF"],
+  //   },
+  //   colors: ["#2CD9FF", "#582CFF"],
+  // };
 
   return (
     <Flex flexDirection="column" pt={{ base: "120px", md: "75px" }}>
@@ -275,7 +347,7 @@ export default function Dashboard() {
                   </Flex>
                   <Box mx={{ sm: "auto", md: "0px" }}>
                     <GradientProgress
-                      percent={Number(stats[0].iaqScore).toFixed(0)}
+                      percent={70}
                       viewport
                       size={
                         window.innerWidth >= 1024
@@ -326,75 +398,119 @@ export default function Dashboard() {
             </Card>
             {/* Satisfaction Rate */}
             <Card gridArea={{ md: "2 / 2 / 3 / 3", "2xl": "auto" }}>
-              <CardHeader mb="24px">
-                <Flex direction="column">
-                  <Text color="#fff" fontSize="lg" fontWeight="bold" mb="4px">
-                    How would you rate Themis?
+              <Flex direction="column">
+                <Flex justify="space-between" align="center" mb="40px">
+                  <Text color="#fff" fontSize="lg" fontWeight="bold">
+                    Your IAQ Details
                   </Text>
-                  <Text color="gray.400" fontSize="sm">
-                    Do share your feedback with us.
-                  </Text>
+                  <Button
+                    borderRadius="12px"
+                    w="38px"
+                    h="38px"
+                    bg="#101022"
+                    _hover="none"
+                    _active="none"
+                  >
+                    <Icon as={IoEllipsisHorizontal} color="#7551FF" />
+                  </Button>
                 </Flex>
-              </CardHeader>
-              <Flex direction="column" justify="center" align="center">
-                <Box zIndex="-1">
-                  <GradientProgress
-                    percent={80}
-                    viewport
-                    size={200}
-                    isGradient
-                    gradient={{
-                      angle: 90,
-                      startColor: "rgba(117, 81, 255, 0)",
-                      stopColor: "#582CFF",
-                    }}
-                    emptyColor="#22234B"
-                  >
-                    <IconBox
-                      bg="brand.200"
-                      borderRadius="50%"
-                      w="48px"
-                      h="48px"
-                      transform={{
-                        sm: "translateY(-60%)",
-                        md: "translateY(-30%)",
-                      }}
-                    >
-                      <Icon as={BiHappy} color="#fff" w="30px" h="30px" />
-                    </IconBox>
-                  </GradientProgress>
-                </Box>
-                <Stack
-                  direction="row"
-                  justify="space-between"
-                  w={{ sm: "270px", md: "300px", lg: "100%" }}
-                  mx={{ sm: "auto", md: "0px" }}
-                  p="18px 22px"
-                  bg="linear-gradient(126.97deg, rgb(6, 11, 40) 28.26%, rgba(10, 14, 35) 91.2%)"
-                  borderRadius="20px"
-                  position="absolute"
-                  bottom="5%"
+                <Flex
+                  direction={{ sm: "column", md: "row" }}
+                  justifyContent={"space-between"}
                 >
-                  <Text fontSize="xs" color="gray.400" w={"20%"} align={"left"}>
-                    0%
-                  </Text>
-                  <Flex direction="column" align="center" minW="80px" w={"60%"}>
-                    <Text color="#fff" fontSize="28px" fontWeight="bold">
-                      95%
-                    </Text>
-                    <Text fontSize="xs" color="gray.400">
-                      Based on likes
-                    </Text>
-                  </Flex>
-                  <Text
-                    fontSize="xs"
-                    color="gray.400"
-                    w={"20%"}
-                    align={"right"}
+                  <Flex
+                    direction="column"
+                    me={{ md: "6px", lg: "0px" }}
+                    mb={{ sm: "16px", md: "0px" }}
                   >
-                    100%
-                  </Text>
-                </Stack>
+                    <Flex
+                      direction="column"
+                      p="22px"
+                      pe={{ sm: "22e", md: "8px", lg: "22px" }}
+                      minW={{ sm: "220px", md: "140px", lg: "220px" }}
+                      bg="linear-gradient(126.97deg, #060C29 28.26%, rgba(4, 12, 48, 0.5) 91.2%)"
+                      borderRadius="20px"
+                      mb="20px"
+                    >
+                      <Text color="gray.400" fontSize="sm" mb="4px">
+                        Carbon Dioxide Levels
+                      </Text>
+                      <Text
+                        color="#fff"
+                        fontSize="lg"
+                        fontWeight="bold"
+                        textTransform={"capitalize"}
+                      >
+                        {stats[0].co2Type}
+                      </Text>
+                    </Flex>
+                    <Flex
+                      direction="column"
+                      p="22px"
+                      minW={{ sm: "210px", md: "140px", lg: "210px" }}
+                      bg="linear-gradient(126.97deg, #060C29 28.26%, rgba(4, 12, 48, 0.5) 91.2%)"
+                      borderRadius="20px"
+                    >
+                      <Text color="gray.400" fontSize="sm" mb="4px">
+                        Carbon Monoxide Levels
+                      </Text>
+                      <Text
+                        color="#fff"
+                        fontSize="lg"
+                        fontWeight="bold"
+                        textTransform={"capitalize"}
+                      >
+                        {stats[0].coType}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                  <Flex
+                    direction="column"
+                    me={{ md: "6px", lg: "0px" }}
+                    mb={{ sm: "16px", md: "0px" }}
+                  >
+                    <Flex
+                      direction="column"
+                      p="22px"
+                      pe={{ sm: "22e", md: "8px", lg: "22px" }}
+                      minW={{ sm: "220px", md: "140px", lg: "220px" }}
+                      bg="linear-gradient(126.97deg, #060C29 28.26%, rgba(4, 12, 48, 0.5) 91.2%)"
+                      borderRadius="20px"
+                      mb="20px"
+                    >
+                      <Text color="gray.400" fontSize="sm" mb="4px">
+                        Temperature Levels
+                      </Text>
+                      <Text
+                        color="#fff"
+                        fontSize="lg"
+                        fontWeight="bold"
+                        textTransform={"capitalize"}
+                      >
+                        {stats[0].temperatureType}
+                      </Text>
+                    </Flex>
+                    <Flex
+                      direction="column"
+                      p="22px"
+                      minW={{ sm: "210px", md: "140px", lg: "210px" }}
+                      bg="linear-gradient(126.97deg, #060C29 28.26%, rgba(4, 12, 48, 0.5) 91.2%)"
+                      borderRadius="20px"
+                    >
+                      <Text color="gray.400" fontSize="sm" mb="4px">
+                        Humidity Levels
+                      </Text>
+                      <Text
+                        color="#fff"
+                        fontSize="lg"
+                        fontWeight="bold"
+                        textTransform={"capitalize"}
+                      >
+                        {stats[0].humidityType}
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
               </Flex>
             </Card>
           </Grid>
@@ -515,7 +631,7 @@ export default function Dashboard() {
                     </StatLabel>
                     <Flex>
                       <StatNumber fontSize="lg" color="#fff" fontWeight="bold">
-                      {`${Number(stats[0].humidityValue).toFixed(0)} %`}
+                        {`${Number(stats[0].humidityValue).toFixed(0)} %`}
                       </StatNumber>
                     </Flex>
                   </Stat>
@@ -543,10 +659,36 @@ export default function Dashboard() {
                 </Flex>
               </CardHeader>
               <Box w="100%" minH={{ sm: "300px" }}>
+                {/* <LineChart
+                  lineChartData={[{
+                    name: "IAQ Score",
+                    data: plottingX
+                  }]}
+                  lineChartOptions={linechartOptions}
+                /> */}
                 <LineChart
-                  lineChartData={lineChartDataDashboard}
-                  lineChartOptions={lineChartOptionsDashboard}
-                />
+                  width={1110}
+                  height={300}
+                  data={plotting}
+                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                >
+                  <XAxis dataKey="time" />
+                  <YAxis dataKey="iaq" />
+                  <Tooltip />
+                  <CartesianGrid stroke="#f5f5f5" />
+                  <Line
+                    type="monotone"
+                    dataKey="iaq"
+                    stroke="#ff7300"
+                    yAxisId={0}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="pv"
+                    stroke="#387908"
+                    yAxisId={1}
+                  />
+                </LineChart>
               </Box>
             </Card>
           </Grid>
@@ -555,32 +697,3 @@ export default function Dashboard() {
     </Flex>
   );
 }
-
-const labelLogos = (alertStatus, healthStatus) => {
-  if (
-    alertStatus == false &&
-    (healthStatus == "excellent" || healthStatus == "good")
-  ) {
-    return (
-      <IconBox as="box" h={"45px"} w={"45px"} bg="green.300">
-        <BsFillPatchCheckFill size={"24px"} color="#fff" />
-      </IconBox>
-    );
-  }
-
-  if (alertStatus == false && healthStatus == "okay") {
-    return (
-      <IconBox as="box" h={"45px"} w={"45px"} bg="yellow.300">
-        <RiErrorWarningFill size={"24px"} color="#fff" />
-      </IconBox>
-    );
-  }
-
-  if (alertStatus == true) {
-    return (
-      <IconBox as="box" h={"45px"} w={"45px"} bg="red.500">
-        <RiErrorWarningFill size={"24px"} color="#fff" />
-      </IconBox>
-    );
-  }
-};

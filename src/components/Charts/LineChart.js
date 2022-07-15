@@ -13,11 +13,13 @@ class LineChart extends React.Component {
 
   componentDidMount() {
     const { lineChartData, lineChartOptions } = this.props;
-
-    this.setState({
-      chartData: lineChartData,
-      chartOptions: lineChartOptions,
-    });
+    window.setInterval(() => {
+      this.setState({
+        chartData: lineChartData,
+        chartOptions: lineChartOptions,
+      });
+    }, 1000);
+    
   }
 
   render() {
